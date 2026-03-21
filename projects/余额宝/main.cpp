@@ -121,7 +121,6 @@ int main(void){
 	
 	//设置图标（加载窗体）
 	form_main.IconSet(IDI_ICON1);
-	form1.IconSet(IDI_ICON1);
 
 	//展示主窗体
 	form_main.Show();
@@ -152,14 +151,17 @@ void form_main_QueryUnload(int pbCancel){
 
 //点击按键弹出相应对话框
 void form_main_Button1_Click(void){
+	form1.IconSet(IDI_ICON1);
 	form1.Show();
 }
 
 void form_main_Button2_Click(void){
+	form2.IconSet(IDI_ICON1);
 	form2.Show();
 }
 
 void form_main_Button3_Click(void){
+	form3.IconSet(IDI_ICON1);
 	form3.Show();
 }
 //form_main事件函数定义	结束
