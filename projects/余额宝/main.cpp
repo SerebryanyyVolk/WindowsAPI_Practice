@@ -815,8 +815,8 @@ static void list_view_Set(int lsv_id){
 	form1.Control(lsv_id).ListViewFullRowSelectSet(true);
 
 	//新建各列（参数1、2、3依次为列标题、列宽、对齐方式）
-	form1.Control(lsv_id).ListViewAddColumn(TEXT("序号"), 60, 0);
-	form1.Control(lsv_id).ListViewAddColumn(TEXT("年化收益率（%）"), 100, 0);
+	form1.Control(lsv_id).ListViewAddColumn(TEXT("序号"), 50, 0);
+	form1.Control(lsv_id).ListViewAddColumn(TEXT("年化收益率（%）"), 110, 0);
 	form1.Control(lsv_id).ListViewAddColumn(TEXT("开始存入（元）"), 100, 0);
 	form1.Control(lsv_id).ListViewAddColumn(TEXT("存入时间（年）"), 100, 0);
 	form1.Control(lsv_id).ListViewAddColumn(TEXT("最后总金额（元）"), 110, 0);
