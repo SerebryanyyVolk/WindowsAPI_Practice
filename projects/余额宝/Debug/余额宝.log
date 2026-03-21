@@ -1,12 +1,12 @@
-﻿生成启动时间为 2026/3/19 19:57:47。
+﻿生成启动时间为 2026/3/21 20:26:54。
      1>项目“E:\AAA_data\vs2010\cpp\projects\余额宝\余额宝.vcxproj”在节点 2 上(build 个目标)。
      1>InitializeBuildStatus:
-         正在对“Debug\余额宝.unsuccessfulbuild”执行 Touch 任务。
+         正在创建“Debug\余额宝.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
        ClCompile:
          D:\VS2010\vs2010\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
        ResourceCompile:
-         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D _UNICODE /D UNICODE /l"0x0409" /nologo /fo"Debug\template.res" template.rc 
+         所有输出均为最新。
        ManifestResourceCompile:
          所有输出均为最新。
        Link:
@@ -31,4 +31,4 @@
 
 生成成功。
 
-已用时间 00:00:01.16
+已用时间 00:00:00.99
