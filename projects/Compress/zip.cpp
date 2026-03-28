@@ -125,7 +125,7 @@ void zip_close(zip_t *zip)
 	free(zip);
 }
 
-PathType GetPathType(LPTSTR path)
+eZipPathType GetPathType(LPTSTR path)
 {
 	DWORD attr = GetFileAttributes(path);
 	if (attr == INVALID_FILE_ATTRIBUTES)
@@ -170,12 +170,12 @@ void GetFileNameWithoutExt(LPTSTR fullPath, LPTSTR outFileNameNoExt)
 	_stprintf_s(outFileNameNoExt, MAX_PATH, TEXT("%s"), fileName);
 }
 
-bool CreateZipFromFile(LPTSTR src_file_path, LPTSTR zip_output_path)
+eZipErrCode CreateZipFromFile(LPTSTR src_file_path, LPTSTR zip_output_path)
 {
 	// 打开原文件
 	FILE* f = _wfopen(src_file_path, L"rb");
 	if (!f)
-		return FALSE;
+		return eZip_ErrSrcFile;
 
 	fseek(f, 0, SEEK_END);
 	long fileSize = ftell(f);
@@ -213,7 +213,7 @@ bool CreateZipFromFile(LPTSTR src_file_path, LPTSTR zip_output_path)
 	if (!zip)
 	{
 		free(fileData);
-		return FALSE;
+		return eZip_ErrTgtFile;
 	}
 
 	unsigned int crc = crc32(fileData, fileSize);
@@ -291,10 +291,11 @@ bool CreateZipFromFile(LPTSTR src_file_path, LPTSTR zip_output_path)
 	memcpy(&end[16], &centralOff, 4);
 
 	fwrite(end, 1, 22, zip);
-	fclose(zip);
+	if(fclose(zip))
+		return eZip_ErrTgtClose;
 	free(fileData);
 
-	return true;
+	return eZip_OK;
 }
 
 
@@ -302,12 +303,11 @@ bool CreateZipFromFile(LPTSTR src_file_path, LPTSTR zip_output_path)
 // 工具函数：递归遍历文件夹并写入ZIP
 // ==============================
 // 递归遍历目录，只写本地文件头 + 文件数据，缓存中央目录信息
-bool AddDirectoryToZip(
+eZipErrCode AddDirectoryToZip(
 	FILE* zipFile, 
 	LPTSTR baseDir, 
 	LPTSTR currentDir,
-	std::vector<ZipCentralEntry>& centralList,  // 缓存中央目录
-	unsigned int& fileCount)
+	std::vector<ZipCentralEntry>& centralList,  /* 缓存中央目录 */ unsigned int& fileCount)
 {
 	TCHAR searchPath[MAX_PATH];
 	_stprintf_s(searchPath, MAX_PATH, TEXT("%s\\*.*"), currentDir);
@@ -315,7 +315,7 @@ bool AddDirectoryToZip(
 	WIN32_FIND_DATA findData;
 	HANDLE hFind = FindFirstFile(searchPath, &findData);
 	if (hFind == INVALID_HANDLE_VALUE)
-		return false;
+		return eZip_ErrSrcFile;
 
 	do
 	{
@@ -328,11 +328,12 @@ bool AddDirectoryToZip(
 
 		// 递归子目录
 		if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		{
-			if (!AddDirectoryToZip(zipFile, baseDir, fullPath, centralList, fileCount))
+		{	
+			eZipErrCode ret = AddDirectoryToZip(zipFile, baseDir, fullPath, centralList, fileCount); 
+			if (eZip_OK != ret)
 			{
 				FindClose(hFind);
-				return false;
+				return ret;
 			}
 		}
 		else
@@ -407,16 +408,16 @@ bool AddDirectoryToZip(
 	} while (FindNextFile(hFind, &findData));
 
 	FindClose(hFind);
-	return true;
+	return eZip_OK;
 }
 
 // ==============================
 // 核心函数：压缩整个文件夹到ZIP
 // ==============================
-bool CreateZipFromFolder(LPTSTR src_folder_path, LPTSTR zip_output_path)
+eZipErrCode CreateZipFromFolder(LPTSTR src_folder_path, LPTSTR zip_output_path)
 {
 	if (!src_folder_path || !zip_output_path || _tcslen(src_folder_path) == 0)
-		return false;
+		return eZip_ErrSrcFile;
 
 	TCHAR baseDir[MAX_PATH];
 	_tcscpy_s(baseDir, src_folder_path);
@@ -429,7 +430,7 @@ bool CreateZipFromFolder(LPTSTR src_folder_path, LPTSTR zip_output_path)
 	WideCharToMultiByte(CP_ACP, 0, zip_output_path, -1, zipPath, MAX_PATH*2, NULL, NULL);
 
 	FILE* zip = fopen(zipPath, "wb");
-	if (!zip) return false;
+	if (!zip) return eZip_ErrTgtFile;
 
 	std::vector<ZipCentralEntry> centralList;
 	unsigned int fileCount = 0;
@@ -437,12 +438,12 @@ bool CreateZipFromFolder(LPTSTR src_folder_path, LPTSTR zip_output_path)
 	// ==========================
 	// 第一步：写入所有文件（只写本地头+数据）
 	// ==========================
-	bool ret = AddDirectoryToZip(zip, baseDir, baseDir, centralList, fileCount);
-	if (!ret || fileCount == 0)
+	eZipErrCode ret = AddDirectoryToZip(zip, baseDir, baseDir, centralList, fileCount);
+	if (eZip_OK != ret || fileCount == 0)
 	{
 		fclose(zip);
 		remove(zipPath);
-		return false;
+		return ret;
 	}
 
 	// ==========================
@@ -502,8 +503,9 @@ bool CreateZipFromFolder(LPTSTR src_folder_path, LPTSTR zip_output_path)
 	memcpy(end+16, &centralOff, 4);
 
 	fwrite(end, 1, 22, zip);
-	fclose(zip);
-	return true;
+	if(fclose(zip))
+		return eZip_ErrTgtClose;
+	return eZip_OK;
 }
 
 
