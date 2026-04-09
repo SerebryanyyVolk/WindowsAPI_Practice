@@ -4,11 +4,14 @@
 
 CBForm form1(ID_form1);
 
-CRedEnvelope pack1(100, 3);
-CRedEnvelope pack2(200, 5);
+//pack1,2,3分别对应红包1,2,3
+CRedEnvelope pack1(100, 3, 0);
+CRedEnvelope pack2(200, 5, 0);
 CRedEnvelope pack3;
 
 void Form1_Load(void);
+//窗口退出弹出确认窗口
+void Form1_QueryUnload(int pbCancel);
 
 void ButtonGrab1_Click(void);
 void ButtonLook1_Click(void);
@@ -22,13 +25,19 @@ void ButtonGrab3_Click(void);
 void ButtonLook3_Click(void);
 
 int main(void){
+	//窗体事件注册
 	form1.EventAdd(0, eForm_Load, Form1_Load);
+	form1.EventAdd(0, eForm_QueryUnload, Form1_QueryUnload);
+
+	//红包1事件注册
 	form1.EventAdd(ID_buttonGrab1, eCommandButton_Click, ButtonGrab1_Click);
 	form1.EventAdd(ID_buttonLook1, eCommandButton_Click, ButtonLook1_Click);
 
+	//红包2事件注册
 	form1.EventAdd(ID_buttonGrab2, eCommandButton_Click, ButtonGrab2_Click);
 	form1.EventAdd(ID_buttonLook2, eCommandButton_Click, ButtonLook2_Click);
 
+	//红包3事件注册
 	form1.EventAdd(ID_inputTxtMoney, eKeyPress, Form1_TxtKeyPressHandler);
 	form1.EventAdd(ID_inputTxtSize, eKeyPress, Form1_TxtKeyPressHandler);
 	form1.EventAdd(ID_buttonSet3, eCommandButton_Click, ButtonSet3_Click);
@@ -52,8 +61,22 @@ void Form1_Load(void){
 	//设置红包3抢红包和查看按钮为不可按，因为此时还没塞钱进红包
 	form1.Control(ID_buttonGrab3).EnabledSet(false);
 	form1.Control(ID_buttonLook3).EnabledSet(false);
+
+	//设置红包1查看按键不可用，因为刚开始没有历史记录
+	form1.Control(ID_buttonLook1).EnabledSet(false);
+
+	//在左侧列表中显示提示
+	form1.Control(ID_list).AddItem(TEXT("点击“查看”键在此查看历史记录"));
+
 	//先让机器人抢一次红包2
 	pack2.OpenOne(TEXT("机器人2"));
+}
+
+void Form1_QueryUnload(int pbCancel){
+	MsgBeep(mb_SoundQuestion);
+	if(idYes != MsgBox(TEXT("确定要退出吗？"), TEXT("退出"), mb_YesNo, mb_IconQuestion)){
+		*((int *)pbCancel) = 1;
+	}
 }
 
 void ButtonGrab1_Click(void){
@@ -83,6 +106,7 @@ void ButtonGrab1_Click(void){
 		MsgBox(msg, TEXT("抢到红包！"), mb_OK, mb_IconInformation);
 		//在输入用户名下方的文本框中显示钱数
 		form1.Control(ID_txt1).TextSet(msg);
+		form1.Control(ID_buttonLook1).EnabledSet(true);
 	}
 }
 
@@ -102,7 +126,7 @@ void ButtonLook1_Click(void){
 	//清空列表
 	form1.Control(ID_list).ListClear();
 
-	//清空pop索引值
+	//清空pop索引值，从首个抢红包用户开始获得用户信息
 	pack1.ClearPartsPopIdx();
 
 	//pop opened 次，获取所有开过红包的用户名及其钱数
@@ -305,8 +329,6 @@ void ButtonGrab3_Click(void){
 			TEXT("元红包！")
 			);
 		MsgBox(msg, TEXT("抢到红包！"), mb_OK, mb_IconInformation);
-		//在输入用户名下方的文本框中显示钱数
-		form1.Control(ID_txt3).TextSet(msg);
 	}
 }
 
@@ -356,7 +378,7 @@ void ButtonLook3_Click(void){
 		form1.Control(ID_list).AddItem(msg);
 	}
 
-	//展示剩下红包数
+	//展示剩余红包数
 	//若开完则说明
 	if(remained > 0){
 		msg = StrAppend(TEXT("还有  "), Str(remained), TEXT("  份红包没开！"));
@@ -366,4 +388,3 @@ void ButtonLook3_Click(void){
 		form1.Control(ID_list).AddItem(TEXT("所有红包均开完！"));
 	}
 }
-

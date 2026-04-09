@@ -9,17 +9,22 @@ CRedEnvelope::CRedEnvelope(void){
 	EnvelopeSet(100, 1);
 }
 
-CRedEnvelope::CRedEnvelope(int _money){
+CRedEnvelope::CRedEnvelope(int _mode){
 	parts = NULL;
-	if(false == EnvelopeSet(_money, 1)){
-		EnvelopeSet(100, 1);//如果塞钱失败则相当于调用无参数时的构造函数
+	EnvelopeSet(100, 1, _mode);
+}
+
+CRedEnvelope::CRedEnvelope(int _money, int _mode){
+	parts = NULL;
+	if(false == EnvelopeSet(_money, 1, _mode)){
+		EnvelopeSet(100, 1, _mode);//如果塞钱失败则相当于调用无参数时的构造函数
 	}
 }
 
-CRedEnvelope::CRedEnvelope(int _money, int _size){
+CRedEnvelope::CRedEnvelope(int _money, int _size, int _mode){
 	parts = NULL;
-	if(false == EnvelopeSet(_money, _size)){
-		EnvelopeSet(100, 1);//如果塞钱失败则相当于调用无参数时的构造函数
+	if(false == EnvelopeSet(_money, _size, _mode)){
+		EnvelopeSet(100, 1, _mode);//如果塞钱失败则相当于调用无参数时的构造函数
 	}
 }
 
@@ -30,7 +35,7 @@ CRedEnvelope::~CRedEnvelope(void){
 	}
 }
 
-bool CRedEnvelope::EnvelopeSet(int _money, int _size){
+bool CRedEnvelope::EnvelopeSet(int _money, int _size, int _mode){
 	if (_money<= 0 ||
 		_size <= 0)
 		return false;
@@ -50,6 +55,7 @@ bool CRedEnvelope::EnvelopeSet(int _money, int _size){
 	//设置新红包的信息
 	money = _money;
 	psize = _size;
+	mode = _mode;
 	parts = new struct PART[psize];
 	memset(parts, 0, psize * sizeof(PART));
 
@@ -59,7 +65,7 @@ bool CRedEnvelope::EnvelopeSet(int _money, int _size){
 	return true;
 }
 
-int CRedEnvelope::OpenOne(TCHAR * user, int mode){
+int CRedEnvelope::OpenOne(TCHAR * user){
 	if(0 == money)	//尚未塞钱进红包
 		return 0;
 	if(0 == psize)	//尚未划分红包
@@ -77,22 +83,24 @@ int CRedEnvelope::OpenOne(TCHAR * user, int mode){
 		ret = remainMoney;
 	}
 	else{
-		/********************************************
+		/**********************************************************
+		(注：此处对应的视频代码有问题，视频中随机数不遵循均匀分布)
+
 		随机打开一份，所产生的钱数范围在
 		1分～（剩余钱数/剩余份数 * 2 - 1）
 		产生随机数：1～（剩余钱数/剩余份数 * 2 - 1）
 
 		rand() % (remainMoney/remainParts*2 - 1)能产生
 		范围在0～（剩余钱数/剩余份数 * 2 - 2）的随机数，
-		加上1可得所需范围随机数，且不改变概率分布
-		*********************************************/
+		加上1可得所需范围随机数，且不改变rand()的概率分布
+		***********************************************************/
 		ret = rand() % (remainMoney/remainParts*2 - 1) + 1;
 
 	}
 
 	//将此次开红包信息记录到parts[]
 	parts[opened].cents = ret;
-	_tcscpy(parts[opened].account, user);
+	_tcscpy_s(parts[opened].account, 64 * sizeof(TCHAR), user);
 
 	//已打开的红包数+1
 	opened ++;
@@ -132,6 +140,9 @@ int CRedEnvelope::GetBestIdx(void){
 	int temp = 0;
 	int idx = -1;
 	for(int i = 0; i < opened;){
+		//如果当前i索引的变量大于temp存储的变量
+		//则令temp等于该值，并让idx等于当前索引值i
+		//遍历一遍数组即可得到最大值对应索引idx
 		if(temp < parts[i].cents){
 			temp = parts[i].cents;
 			idx = i;
