@@ -58,6 +58,9 @@
     <None Include="main.ico">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="cover.bmp">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="template.rc">

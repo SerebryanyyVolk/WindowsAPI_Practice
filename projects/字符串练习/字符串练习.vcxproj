@@ -90,6 +90,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cover.bmp" />
     <None Include="main.ico" />
   </ItemGroup>
   <ItemGroup>
