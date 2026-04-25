@@ -1,6 +1,9 @@
 #include "resource.h"
 #include "BForm.h"
 
+//窗口默认密码是：
+//Pass
+
 CBForm formLogin(ID_formLogin);
 CBForm formMain(ID_formMainWnd);
 
@@ -8,6 +11,7 @@ void FormLogin_Load(void);
 void FormLogin_QueryUnload(int pbCancel);
 void FormLogin_CmdLogin(void);
 void FormLogin_CmdExit(void);
+void FormLogin_PwdKeyPressHandler(int keyAscii, int pbCancel);
 
 void FormMain_Load(void);
 void FormMain_QueryUnload(int pbCancel);
@@ -21,6 +25,7 @@ int main(void){
 	formLogin.EventAdd(0, eForm_QueryUnload, FormLogin_QueryUnload);
 	formLogin.EventAdd(ID_buttonLogin, eCommandButton_Click, FormLogin_CmdLogin);
 	formLogin.EventAdd(ID_buttonExit, eCommandButton_Click, FormLogin_CmdExit);
+	formLogin.EventAdd(ID_inputTxtPwd, eKeyPress, FormLogin_PwdKeyPressHandler);
 
 	//注册主窗体事件
 	formMain.EventAdd(0, eForm_Load, FormMain_Load);
@@ -79,6 +84,13 @@ void FormLogin_CmdExit(void){
 	formLogin.UnLoad();
 }
 
+void FormLogin_PwdKeyPressHandler(int keyAscii, int pbCancel){
+	//MsgBox(Str(keyAscii));
+	//焦点在输入框时，可以按回车确认输入
+	if(13 == keyAscii)
+		FormLogin_CmdLogin();
+}
+
 void FormMain_Load(void){
 	//设置主窗体图标
 	formMain.IconSet(IDI_ICON1);
@@ -96,6 +108,7 @@ void FormMain_Load(void){
 }
 
 void FormMain_QueryUnload(int pbCancel){
+	//此处主要是与前面FormLogin_QueryUnload()逻辑统一,目前代码中没有隐藏FormMain的必要
 	//如果窗体未被隐藏
 	if(formMain.Visible()){
 		//弹窗询问是否退出
