@@ -13,59 +13,74 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\common">
+      <UniqueIdentifier>{51148f9d-f645-4a59-9f2f-5cd79fe6d097}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\common">
+      <UniqueIdentifier>{c598be4f-8fb8-4534-9aca-50a6571c9758}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BControl.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BForm.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BMenuItem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BWindows.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BWndBase.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BHashStrK.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="mdlOpenSaveDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BWndBase.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="BControl.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="BForm.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="BHashStrK.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="BMenuItem.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="BReadLinesEx.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="BWindows.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="mdlOpenSaveDlg.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BControl.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="BForm.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="BMenuItem.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="BWindows.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="BWndBase.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BWndBase.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="BControl.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="BForm.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
     <ClCompile Include="BHashStrK.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="BMenuItem.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="BReadLinesEx.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="BWindows.cpp">
+      <Filter>源文件\common</Filter>
     </ClCompile>
     <ClCompile Include="mdlOpenSaveDlg.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="FormMain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

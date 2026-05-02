@@ -78,6 +78,7 @@
     <ClInclude Include="BForm.h" />
     <ClInclude Include="BHashStrK.h" />
     <ClInclude Include="BMenuItem.h" />
+    <ClInclude Include="BReadLinesEx.h" />
     <ClInclude Include="BWindows.h" />
     <ClInclude Include="BWndBase.h" />
     <ClInclude Include="main.h" />
@@ -89,8 +90,10 @@
     <ClCompile Include="BForm.cpp" />
     <ClCompile Include="BHashStrK.cpp" />
     <ClCompile Include="BMenuItem.cpp" />
+    <ClCompile Include="BReadLinesEx.cpp" />
     <ClCompile Include="BWindows.cpp" />
     <ClCompile Include="BWndBase.cpp" />
+    <ClCompile Include="FormMain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mdlOpenSaveDlg.cpp" />
   </ItemGroup>

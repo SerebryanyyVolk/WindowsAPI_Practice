@@ -150,7 +150,6 @@ void CBWndBase::VScrollBarSet(bool bValue)
 
 
 
-
 bool CBWndBase::TabStop()
 {
 	if (Style() & WS_TABSTOP) return true; else return false;
