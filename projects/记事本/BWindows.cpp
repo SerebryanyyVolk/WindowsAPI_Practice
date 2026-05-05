@@ -1668,8 +1668,7 @@ LONG EFPrint( HANDLE hFile,
 	eEFLineFeed styleLineFeed /*= EF_LineSeed_CrLf*/, 
 	LONGLONG llWritePos /*= -1*/, 
 	int iShowResume /*= 1*/, 
-	LPCTSTR szFailInfo /*= TEXT("无法向文件中写入字符串。")*/ ,
-	int asUnicode/*0*/)
+	LPCTSTR szFailInfo /*= TEXT("无法向文件中写入字符串。")*/ )
 {
 	char * buff = 0; 
 	int iLenBytes=0;
@@ -1683,31 +1682,19 @@ LONG EFPrint( HANDLE hFile,
 	else
 	{
 #ifdef UNICODE
-		if (asUnicode){
-			iLenBytes = (lstrlen(szText) + 1) * sizeof(WCHAR);  // 带\0的字节数
-			buff = new char[iLenBytes + 4];   // 预留换行空间 \r\n 4字节
 
-			// 直接拷贝UNICODE文本
-			memcpy(buff, szText, iLenBytes);
-		}
-		else{
-
-			// 获得结果字符串所需字符个数，参数 -1 使函数自动计算 szText 的长度
-			// iLenBytes 为包含最后的 \0 的总共字节数
-			iLenBytes = WideCharToMultiByte(CP_ACP, 0, szText, -1, NULL, 0, NULL, NULL);
-			// 分配结果字符串的空间
-			buff = new char [iLenBytes + 2];  // 最多比文本长度+\0的长度多2个字节：\0(\r) \n \0
-			// 转换为 Ansi 的字符串：用 aLenBytes 因函数需要的是字节数非字符数
-			WideCharToMultiByte(CP_ACP, 0, szText, -1, buff, iLenBytes, NULL, NULL);  
+		// 获得结果字符串所需字符个数，参数 -1 使函数自动计算 szText 的长度
+		// iLenBytes 为包含最后的 \0 的总共字节数
+		iLenBytes = WideCharToMultiByte(CP_ACP, 0, szText, -1, NULL, 0, NULL, NULL);
+		// 分配结果字符串的空间
+		buff = new char [iLenBytes + 2];  // 最多比文本长度+\0的长度多2个字节：\0(\r) \n \0
+		// 转换为 Ansi 的字符串：用 aLenBytes 因函数需要的是字节数非字符数
+		WideCharToMultiByte(CP_ACP, 0, szText, -1, buff, iLenBytes, NULL, NULL);  
 #else
-			iLenBytes = lstrlen(szText) + 1;
-			buff = new char [ iLenBytes + 2 ];  // 最多比文本长度+\0的长度多2个字节：\0(\r) \n \0
-			strcpy(buff, szText);
+		iLenBytes = lstrlen(szText) + 1;
+		buff = new char [ iLenBytes + 2 ];  // 最多比文本长度+\0的长度多2个字节：\0(\r) \n \0
+		strcpy(buff, szText);
 #endif
-#ifdef UNICODE
-		}
-#endif
-
 	}
 
 	switch (styleLineFeed)
@@ -1743,10 +1730,9 @@ LONG EFPrint( HANDLE hFile,
 	eEFLineFeed styleLineFeed /*= EF_LineSeed_CrLf*/, 
 	LONGLONG llWritePos /*= -1*/, 
 	int iShowResume /*= 1*/, 
-	tstring stringFailInfo /*= TEXT("无 ㄏ蛭募行慈胱??)*/,
-	int asUnicode/*0*/)
+	tstring stringFailInfo /*= TEXT("无 ㄏ蛭募行慈胱??)*/)
 {
-	return EFPrint(hFile, stringText.c_str(), styleLineFeed, llWritePos, iShowResume, stringFailInfo.c_str(), asUnicode);
+	return EFPrint(hFile, stringText.c_str(), styleLineFeed, llWritePos, iShowResume, stringFailInfo.c_str());
 }
 
 tstring StrS( char character )

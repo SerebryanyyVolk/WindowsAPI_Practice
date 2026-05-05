@@ -826,3 +826,13 @@ bool CBReadLinesEx::IsErrOccured()
 	return m_bErrOccured;
 }
 
+bool CBReadLinesEx::IsReadOnly(){
+	if (hFile() != INVALID_HANDLE_VALUE)
+	{
+		DWORD dwAttr = GetFileAttributes(m_szFileName);
+		return (dwAttr & FILE_ATTRIBUTE_READONLY);
+	}
+	//如果未成功打开文件，默认返回 false
+	return false;
+}
+

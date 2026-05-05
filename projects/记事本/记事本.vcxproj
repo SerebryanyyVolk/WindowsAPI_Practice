@@ -81,6 +81,7 @@
     <ClInclude Include="BReadLinesEx.h" />
     <ClInclude Include="BWindows.h" />
     <ClInclude Include="BWndBase.h" />
+    <ClInclude Include="FormMain.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mdlOpenSaveDlg.h" />
     <ClInclude Include="resource.h" />

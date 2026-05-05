@@ -133,6 +133,9 @@ public:  // 方法
 	bool IsEndRead();		// 获得读完状态：=true表示或者读完文件或者出错，即不能再继续读了，主程序应退出读取
 	bool IsErrOccured();	// 获得是否发生了错误状态：是否上次 GetNextLine 发生了一个错误
 
+	bool IsReadOnly();		/* 获得文件的只读属性：true 为只读
+							   如果未成功打开文件，该函数默认返回 false	*/
+
 private:
 	RLBuffType m_buff;			// 一个缓冲区
 	RLLastBuffType m_LastBuff;	// 缓冲区剩余的字节

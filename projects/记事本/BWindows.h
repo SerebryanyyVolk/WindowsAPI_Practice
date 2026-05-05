@@ -833,15 +833,13 @@ LONG EFPrint(HANDLE hFile,
 			 eEFLineFeed styleLineFeed = EF_LineSeed_CrLf, 
 			 LONGLONG llWritePos = -1, 
 			 int iShowResume = 1,
-			 LPCTSTR szFailInfo = TEXT("无法向文件中写入字符串。"),
-			 int asUnicode = 0) ;
+			 LPCTSTR szFailInfo = TEXT("无法向文件中写入字符串。"));
 LONG EFPrint(HANDLE hFile, 
 			 tstring stringText, 
 			 eEFLineFeed styleLineFeed = EF_LineSeed_CrLf, 
 			 LONGLONG llWritePos = -1, 
 			 int iShowResume = 1,
-			 tstring stringFailInfo = TEXT("无法向文件中写入字符串。"),
-			 int asUnicode = 0) ;
+			 tstring stringFailInfo = TEXT("无法向文件中写入字符串。"));
 // 从 dblStartPos 开始（包含 dblStartPos 这个位置），找到第一个是 sFoundChars 
 //   字符串中的任意一个字符的地方。
 // 例如 若 sFoundChars=="\r\n"，就是查找第一个是 \r 或 \n 的地方
