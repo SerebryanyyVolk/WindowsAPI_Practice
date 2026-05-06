@@ -1,5 +1,12 @@
 #pragma once
 
+/*	目前只有 FormMain.cpp 引用该头文件
+	主要是因为如果不把结构体声明放在头文件中，
+	VisualAssist 不能正确显示注释信息，开发很不方便
+*/
+
+#include "BForm.h"
+
 //窗口状态结构体
 struct tMainStatus{
 	//是否显示状态栏

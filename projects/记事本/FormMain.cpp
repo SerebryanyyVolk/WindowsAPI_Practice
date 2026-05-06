@@ -1,5 +1,8 @@
-#include "main.h"
 #include "FormMain.h"
+
+#include "resource.h"
+#include "mdlOpenSaveDlg.h"
+#include "BReadLinesEx.h"
 
 //主窗口加载处理函数
 static void FormMain_Load(void);
