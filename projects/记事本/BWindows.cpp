@@ -1549,7 +1549,8 @@ LONG EFGetBytes( HANDLE hFile,
 				 char * const pBuff, 
 				 LONG iBuffMax /*= 131072*/, 
 				 int iShowResume /*= 1*/ ,
-				 LPCTSTR szFailInfo /*= TEXT("无法读取文件。")*/)
+				 LPCTSTR szFailInfo, /*= TEXT("无法读取文件。")*/
+				 const char * bitsEncKey /* NULL */)
 {
 	LONG iBytesRead=0;	// 真实读取了多少字节
 	int r=0;
@@ -1574,6 +1575,18 @@ LONG EFGetBytes( HANDLE hFile,
 		else
 			break;
 	} while ( ms==idRetry );
+
+	if (bitsEncKey != NULL)   // 解密
+	{
+		// 用按位异或解密 pBuff 地址开始的、长 iBytesRead 的各字节
+		LONG i=0, j=0, iLenKey=strlen(bitsEncKey);
+		for (i=0; i<iBytesRead; i++)
+		{
+			pBuff[i] = pBuff[i] ^ bitsEncKey[j]; // 用按位异或解密
+			j++;                               // 密钥将使用下一个字节
+			if (j>=iLenKey) j=0;               // 密钥用完一趟，从头开始继续使用
+		}
+	}
 	
 	// 返回函数值为实际读取的字节数
 	return iBytesRead;
@@ -1585,7 +1598,8 @@ LONG EFPutBytes( HANDLE hFile,
 				 char * const pBuff, 
 				 LONG iBuffLen /*= 131072*/, 
 				 int iShowResume /*= 1*/, 
-				 LPCTSTR szFailInfo /*= TEXT("无法读取文件。")*/)
+				 LPCTSTR szFailInfo, /*= TEXT("无法读取文件。")*/
+				 const char * bitsEncKey /* NULL */)
 {
 	LONG iBytesWritten=0;	// 真实写入了多少字节
 	int r=0;
@@ -1597,6 +1611,18 @@ LONG EFPutBytes( HANDLE hFile,
 		r = EFSeekSet(hFile, llWritePos, iShowResume, szFailInfo);  // 此函数若出错会弹出重试对话框
 		if (r < 0)  // 移动读写指针失败
 			{ if (r == -2)  return -2; else return -1; }
+	}
+
+	if (bitsEncKey != NULL)   // 加密
+	{
+		// 用按位异或加密 pBuff 地址开始的、长 iBytesRead 的各字节
+		LONG i=0, j=0, iLenKey=strlen(bitsEncKey);
+		for (i=0; i<iBuffLen; i++)
+		{
+			pBuff[i] = pBuff[i] ^ bitsEncKey[j]; // 用按位异或加密
+			j++;                               // 密钥将使用下一个字节
+			if (j>=iLenKey) j=0;               // 密钥用完一趟，从头开始继续使用
+		}
 	}
 
 	// 写入数据
@@ -1668,7 +1694,8 @@ LONG EFPrint( HANDLE hFile,
 	eEFLineFeed styleLineFeed /*= EF_LineSeed_CrLf*/, 
 	LONGLONG llWritePos /*= -1*/, 
 	int iShowResume /*= 1*/, 
-	LPCTSTR szFailInfo /*= TEXT("无法向文件中写入字符串。")*/ )
+	LPCTSTR szFailInfo, /*= TEXT("无法向文件中写入字符串。")*/
+	const char * bitsEncKey /* NULL*/)
 {
 	char * buff = 0; 
 	int iLenBytes=0;
@@ -1720,7 +1747,7 @@ LONG EFPrint( HANDLE hFile,
 	}
 
 	// iLenBytes-1 去掉最后的 \0 字节
-	LONG ret = EFPutBytes(hFile, llWritePos, buff, iLenBytes-1, iShowResume, szFailInfo);
+	LONG ret = EFPutBytes(hFile, llWritePos, buff, iLenBytes-1, iShowResume, szFailInfo, bitsEncKey);
 	delete []buff;
 	return ret;
 }
@@ -1730,9 +1757,10 @@ LONG EFPrint( HANDLE hFile,
 	eEFLineFeed styleLineFeed /*= EF_LineSeed_CrLf*/, 
 	LONGLONG llWritePos /*= -1*/, 
 	int iShowResume /*= 1*/, 
-	tstring stringFailInfo /*= TEXT("无 ㄏ蛭募行慈胱??)*/)
+	tstring stringFailInfo, /*= TEXT("无 ㄏ蛭募行慈胱??)*/
+	const char * bitsEncKey /* NULL*/)
 {
-	return EFPrint(hFile, stringText.c_str(), styleLineFeed, llWritePos, iShowResume, stringFailInfo.c_str());
+	return EFPrint(hFile, stringText.c_str(), styleLineFeed, llWritePos, iShowResume, stringFailInfo.c_str(), bitsEncKey);
 }
 
 tstring StrS( char character )

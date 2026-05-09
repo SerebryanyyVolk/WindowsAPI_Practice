@@ -3,7 +3,9 @@
 
 int main(void){	
 
-	FormMain_EventMapInit();
+	FormMain_EventsMapInit();
+	FormKey_EventsMapInit();
+
 	FormMain_Start();
 
 	return 0;

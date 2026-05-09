@@ -19,6 +19,9 @@
     <Filter Include="源文件\common">
       <UniqueIdentifier>{c598be4f-8fb8-4534-9aca-50a6571c9758}</UniqueIdentifier>
     </Filter>
+    <Filter Include="说明文档">
+      <UniqueIdentifier>{1c1dd547-12f3-4d71-981c-238e620c0dbd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -51,8 +54,8 @@
     <ClInclude Include="mdlOpenSaveDlg.h">
       <Filter>头文件\common</Filter>
     </ClInclude>
-    <ClInclude Include="FormMain.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="mdlShellExec.h">
+      <Filter>头文件\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +89,12 @@
     <ClCompile Include="FormMain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="FormInputEnc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mdlShellExec.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="main.ico">
@@ -105,6 +114,12 @@
     </None>
     <None Include="NOTE12.ICO">
       <Filter>资源文件</Filter>
+    </None>
+    <None Include="Key.ico">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="README.md">
+      <Filter>说明文档</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

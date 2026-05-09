@@ -1,5 +1,4 @@
-#include "FormMain.h"
-
+#include "main.h"
 #include "resource.h"
 #include "mdlOpenSaveDlg.h"
 #include "BReadLinesEx.h"
@@ -19,6 +18,8 @@ static void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu);
 //主窗口关闭前处理函数
 static void FormMain_QueryUnload(int pbCancel);
 
+//主窗口销毁前处理函数
+static void FormMain_Unload(void);
 
 
 //设置主文本框字体大小
@@ -37,16 +38,16 @@ static void TxtMainFontSet(LPCTSTR fontName);
 static void MenuAllEnableSet(bool bVal);
 
 //初始化主窗体全局变量结构体
-static void FormMain_StatusInit(void);
+static void FormMain_StructInit(void);
 
 //打开位置在 szFileName 的文件，并在主窗口中展示文本
 //打开成功返回 true ，否则返回 false 
 //注：本函数与全局文件路径 appContext.szFilePath 无关，需自行传入路径
-static bool LoadFile(LPCTSTR szFilePatht);
+static bool LoadFile(LPCTSTR szFilePath, const char * encKey = NULL);
 
 // 保存文件到参数 szFileName 所指定的路径+文件名中
 // 成功返回 true 并同时设置 m_szFileName[]；失败返回 false
-static bool SaveFile(LPCTSTR szFileName);
+static bool SaveFile(LPCTSTR szFilePath, const char * encKey = NULL);
 
 
 
@@ -56,30 +57,38 @@ CBForm formMain(ID_formMain);
 TMainContext cFMain;
 
 
-void FormMain_EventMapInit(void){
-	//注册各种事件
+void FormMain_EventsMapInit(void){
+	//注册窗体加载和卸载事件
 	formMain.EventAdd(0, eForm_Load, FormMain_Load);
-	formMain.EventAdd(0, eForm_Resize, FormMain_Resize);
-	formMain.EventAdd(0, eMenu_Click, FormMain_MenuClick);
 	formMain.EventAdd(0, eForm_QueryUnload, FormMain_QueryUnload);
+	formMain.EventAdd(0, eForm_Unload, FormMain_Unload);
 
+	//注册窗体拉伸控件摆放事件
+	formMain.EventAdd(0, eForm_Resize, FormMain_Resize);
+
+	//注册菜单点击事件
+	formMain.EventAdd(0, eMenu_Click, FormMain_MenuClick);
+
+	//注册询问保存事件
 	formMain.EventAdd(ID_txtMainWarp, eEdit_Change, FormMain_TxtChange);
 	formMain.EventAdd(ID_txtMainNWarp, eEdit_Change, FormMain_TxtChange);
 }
 
 void FormMain_Start(void){
-	//弹出主窗口
-	formMain.Show();
+	//加载主窗体
+	formMain.Load();
 
 	//后初始化
 	formMain.Menu(ID_mnuViewFontSong).CheckedSet(true, true, 0, 2, true);		//设置菜单 字体默认勾选宋体
 	formMain.Menu(ID_mnuFileEncodingUTF8).CheckedSet(true, true, 0, 1, true);	//设置菜单 文本编码格式默认为 UTF-8
 	formMain.Menu(ID_mnuViewColorBlack).CheckedSet(true, true, 0, 5, true);		//设置菜单 字体颜色默认为 黑色
+
+	formMain.Show();
 }
 
 //加载主窗体
 void FormMain_Load(void){
-	FormMain_StatusInit();
+	FormMain_StructInit();
 
 	formMain.IconSet(IDI_ICON6);	//设置图标
 	FormMain_Resize();				//摆放控件
@@ -88,6 +97,7 @@ void FormMain_Load(void){
 	TxtMainFontSet(TEXT("宋体"));	//设置默认字体
 
 	//设置主文本框默认背景颜色
+	//不要动这两行初始化，因为后面需要从控件中读取背景色，若不初始化则无法读取
 	formMain.Control(cFMain.txtIdShow).BackColorSet(RGB(255, 255, 255));
 	formMain.Control(cFMain.txtIdHide).BackColorSet(RGB(255, 255, 255));
 
@@ -136,8 +146,10 @@ void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu)
 			cFMain.execPath.c_str(),
 			NULL, NULL, SW_SHOWNORMAL);
 		if(ret <= 32){
-			MsgBox(StrAppend(TEXT("新建时发生错误！\r\n\r\n错误代码："), Str(ret)),		//若ShellExecute返回值小于等于32
-				TEXT("严重错误"), mb_OK, mb_IconError);									//则说明 exe 运行失败，弹窗报错	
+			//若ShellExecute返回值小于等于32
+			//则说明 .exe 运行失败，弹窗报错
+			MsgBox(StrAppend(TEXT("新建时发生严重错误！\r\n\r\n错误代码："), Str(ret)),		
+				TEXT("严重错误"), mb_OK, mb_IconError);										
 		}
 		break;
 
@@ -148,18 +160,30 @@ void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu)
 		cFMain.szFilePath = OsdOpenDlg((HWND)0, (LPCTSTR)NULL, (LPCTSTR)NULL, false, &bTemp);
 		if(!cFMain.szFilePath.empty()){	//若 hform.szFilePath.empty() 返回 false ，说明用户选择了文件，继续处理
 			cFMain.status.cancel = false;
-			if(true == LoadFile(cFMain.szFilePath.c_str())){
+			if(true == LoadFile(cFMain.szFilePath.c_str(), cFMain.encKey)){
 				cFMain.status.isOpenReadOnly = bTemp;	//设置 isOpenReadOnly 标志位等于 OsdOpenDlg 函数返回值 temp
 			}
 			else{
 				//文件打开失败，清空全局变量
 				cFMain.szFilePath = TEXT("");
 			}
+			//若有秘钥使用完后丢弃
+			cFMain.encKey = NULL;
 		}
 		else{
 			//用户取消打开
 			cFMain.status.cancel = true;
 		}
+		break;
+
+	case ID_mnuFileOpenKey:
+		//弹出密码对话框，若输入密码并确定则直接调用点击打开时的处理
+		//打开执行完后会自动丢弃秘钥指针
+		if(InputEncrypt()){
+			FormMain_MenuClick(ID_mnuFileOpen, bIsFromAcce, bIsFromSysMenu);
+		}
+		//将焦点放到主文本框上
+		formMain.Control(cFMain.txtIdShow).SetFocus();
 		break;
 
 	case ID_mnuFileSave:
@@ -187,7 +211,7 @@ void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu)
 		sTemp = OsdSaveDlg((HWND)0, (LPCTSTR)NULL, (LPCTSTR)NULL);	//获取路径
 		if(!sTemp.empty()){						//若路径不为空
 			cFMain.status.cancel = false;	//"用户取消" 全局变量设为 false
-			if(SaveFile(sTemp.c_str())){
+			if(SaveFile(sTemp.c_str(), cFMain.encKey)){
 				//若保存成功则将路径存到全局变量中
 				cFMain.szFilePath = sTemp;
 				//因为自己刚保存的文件不可能有只读属性，故设置为 false
@@ -197,10 +221,74 @@ void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu)
 				//若保存失败则修改底部状态栏
 				formMain.Control(ID_lblStatus).TextSet(TEXT("文件保存失败！"));
 			}
+			//若有秘钥使用完后丢弃
+			cFMain.encKey = NULL;
 		}
 		else{
 			//用户取消另存为 "用户取消" 全局变量设为 true
 			cFMain.status.cancel = true;
+		}
+		break;
+
+	case ID_mnuFileSaveAsKey:
+		//弹出密码对话框，若输入密码并确定则直接调用点击另存为时的处理
+		//另存为执行完后会自动丢弃秘钥指针
+		if(InputEncrypt()){
+			FormMain_MenuClick(ID_mnuFileSaveAs, bIsFromAcce, bIsFromSysMenu);
+		}
+		//将焦点放到主文本框上
+		formMain.Control(cFMain.txtIdShow).SetFocus();
+		break;
+
+	case ID_mnuFileEncodingUTF8:
+		//若之前使用的本来就是UTF-8,则直接跳过
+
+		//若之前用的是ANSI
+		if(cFMain.status.asUTF8 == false){
+			//菜单勾选项改为UTF-8
+			formMain.Menu(ID_mnuFileEncodingUTF8).CheckedSet(true, true, 0, 1, true);
+			//全局变量改为使用UTF-8
+			cFMain.status.asUTF8 = true;
+
+			//若指向文档，则询问用户是否以UTF-8格式重新打开文档
+			if(!cFMain.szFilePath.empty()){
+				if(idYes == MsgBox(TEXT("是否重新打开文档？"), TEXT("重新打开文档"), mb_YesNo, mb_IconQuestion)){
+					if(true == LoadFile(cFMain.szFilePath.c_str())){
+						cFMain.status.isOpenReadOnly = bTemp;	//设置 isOpenReadOnly 
+						//标志位等于 OsdOpenDlg 函数返回值 temp
+					}
+					else{
+						//文件打开失败，清空全局变量
+						cFMain.szFilePath = TEXT("");
+					}
+				}
+			}
+		}
+		break;
+
+	case ID_mnuFileEncodingANSI:
+		//若之前用的本来就是ANSI,则直接跳过
+
+		//若之前使用的是UTF-8
+		if(cFMain.status.asUTF8 == true){
+			//修改菜单勾选项
+			formMain.Menu(ID_mnuFileEncodingANSI).CheckedSet(true, true, 0, 1, true);
+			//修改全局变量
+			cFMain.status.asUTF8 = false;
+
+			//询问用户是否将当前打开的文件以 ANSI 格式重新打开
+			if(!cFMain.szFilePath.empty()){
+				if(idYes == MsgBox(TEXT("是否重新打开文档？"), TEXT("重新打开文档"), mb_YesNo, mb_IconQuestion)){
+					if(true == LoadFile(cFMain.szFilePath.c_str())){
+						cFMain.status.isOpenReadOnly = bTemp;	//设置 isOpenReadOnly 
+						//标志位等于 OsdOpenDlg 函数返回值 temp
+					}
+					else{
+						//文件打开失败，清空全局变量
+						cFMain.szFilePath = TEXT("");
+					}
+				}
+			}
 		}
 		break;
 
@@ -235,60 +323,11 @@ void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu)
 
 	case ID_mnuEditUndo:
 		//占位提示框
-		MsgBox(TEXT("功能还未实现，敬请期待！"), TEXT("正在施工中"), mb_OK, mb_IconInformation);
+		//MsgBox(TEXT("功能还未实现，敬请期待！"), TEXT("正在施工中"), mb_OK, mb_IconInformation);
 		
-		break;
+		SendMessage(formMain.Control(cFMain.txtIdShow).hWnd(),
+				EM_UNDO, 0, 0);
 
-	case ID_mnuFileEncodingUTF8:
-		//若之前使用的本来就是UTF-8,则直接跳过
-
-		//若之前用的是ANSI
-		if(cFMain.status.asUTF8 == false){
-			//菜单勾选项改为UTF-8
-			formMain.Menu(ID_mnuFileEncodingUTF8).CheckedSet(true, true, 0, 1, true);
-			//全局变量改为使用UTF-8
-			cFMain.status.asUTF8 = true;
-
-			//若指向文档，则询问用户是否以UTF-8格式重新打开文档
-			if(!cFMain.szFilePath.empty()){
-				if(idYes == MsgBox(TEXT("是否重新打开文档？"), TEXT("重新打开文档"), mb_YesNo, mb_IconQuestion)){
-					if(true == LoadFile(cFMain.szFilePath.c_str())){
-						cFMain.status.isOpenReadOnly = bTemp;	//设置 isOpenReadOnly 
-																	//标志位等于 OsdOpenDlg 函数返回值 temp
-					}
-					else{
-						//文件打开失败，清空全局变量
-						cFMain.szFilePath = TEXT("");
-					}
-				}
-			}
-		}
-		break;
-	
-	case ID_mnuFileEncodingANSI:
-		//若之前用的本来就是ANSI,则直接跳过
-		
-		//若之前使用的是UTF-8
-		if(cFMain.status.asUTF8 == true){
-			//修改菜单勾选项
-			formMain.Menu(ID_mnuFileEncodingANSI).CheckedSet(true, true, 0, 1, true);
-			//修改全局变量
-			cFMain.status.asUTF8 = false;
-
-			//询问用户是否将当前打开的文件以 ANSI 格式重新打开
-			if(!cFMain.szFilePath.empty()){
-				if(idYes == MsgBox(TEXT("是否重新打开文档？"), TEXT("重新打开文档"), mb_YesNo, mb_IconQuestion)){
-					if(true == LoadFile(cFMain.szFilePath.c_str())){
-						cFMain.status.isOpenReadOnly = bTemp;	//设置 isOpenReadOnly 
-																	//标志位等于 OsdOpenDlg 函数返回值 temp
-					}
-					else{
-						//文件打开失败，清空全局变量
-						cFMain.szFilePath = TEXT("");
-					}
-				}
-			}
-		}
 		break;
 
 	case ID_mnuEditDate:	//日期和时间
@@ -319,6 +358,8 @@ void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu)
 		FormMain_Resize();
 		//切换菜单栏对应项对勾状态
 		formMain.Menu(ID_mnuViewWarp).CheckedSet(cFMain.txtIdShow == ID_txtMainWarp);
+		//设置焦点到显示的文本框上
+		formMain.Control(cFMain.txtIdShow).SetFocus();
 		break;
 
 	case ID_mnuViewState:	//点击状态栏键
@@ -356,6 +397,7 @@ void FormMain_MenuClick(int menuID, int bIsFromAcce, int bIsFromSysMenu)
 		break;
 
 	case ID_mnuViewFontLi:
+		TxtMainFontSet(TEXT("隶书"));
 		formMain.Menu(ID_mnuViewFontLi).CheckedSet(true, true, 0, 2, true);
 		break;
 
@@ -419,6 +461,17 @@ void FormMain_QueryUnload(int pbCancel){
 	}
 }
 
+void FormMain_Unload(void){
+	//// debug 使用
+	//int i = 0;
+	//for(i=1; i<= CBForm::FormsCount(); i++){
+	//	MsgBox(CBForm::FormsObj(i)->Text(), TEXT("尚有未卸载的窗体！"));
+	//}
+
+	////手动退出消息循环
+	//End();
+}
+
 //设置时把展示和隐藏的文本框都更改
 void TxtMainFontSizeSet(float fSize){
 	formMain.Control(cFMain.txtIdShow).FontSizeSet(fSize);
@@ -456,17 +509,21 @@ void MenuAllEnableSet(bool bVal){
 	formMain.Menu(5, 0).EnabledSet(bVal);
 }
 
-void FormMain_StatusInit(void){
+void FormMain_StructInit(void){
 	cFMain.status.showStatusBar = true;	//开始运行时默认显示状态栏
 	cFMain.status.topMost = false;		//开始运行时默认窗口不置顶
+
+	cFMain.status.isSaved = false;
+	cFMain.status.cancel = false;
+	cFMain.status.asUTF8 = true;		//初始默认以utf-8格式打开
+	
+	cFMain.status.isReadOnly = false;
+	cFMain.status.isOpenReadOnly = false;
 
 	cFMain.txtIdShow = ID_txtMainWarp;	//初始默认自动换行
 	cFMain.txtIdHide = ID_txtMainNWarp;
 
-	cFMain.status.isSaved = false;
-	cFMain.status.cancel = false;
-
-	cFMain.status.asUTF8 = true;		//初始默认以utf-8格式打开
+	cFMain.encKey = NULL;
 
 	//获取.exe路径
 	cFMain.execPath = pApp->Command();	//先获得左右两边带 \" 字符的路径
@@ -485,14 +542,15 @@ void FormMain_StatusInit(void){
 //打开位置在 szFilePath 的文件，并在主窗口中展示文本
 //打开成功返回 true ，否则返回 false 
 //注：本函数与全局文件路径 appContext.szFilePath 无关
-bool LoadFile(LPCTSTR szFilePath){
+bool LoadFile(LPCTSTR szFilePath, const char * encKey /*= NULL*/){
 	//按行读取文件
 	//每读取一行，就显示到文本框空间中，节省内存
 	tstring szLine(TEXT(""));	//初始为 ""
 	LPTSTR szTemp = NULL;		//初始为 NULL
 	CBReadLinesEx file;			//文件读取对象
 
-	file.AsUTF8 = cFMain.status.asUTF8;
+	file.AsUTF8 = cFMain.status.asUTF8;	// 决定读取文件时使用的编码格式
+	file.EncryptKey = encKey;			// 决定读取文件时使用的解密秘钥
 
 	//打开文件
 	while(!file.OpenFile(szFilePath)){
@@ -579,7 +637,7 @@ bool LoadFile(LPCTSTR szFilePath){
 
 // 保存文件到参数 szFileName 所指定的路径+文件名中
 // 成功返回 true 并同时设置 appContext.szFilePath；失败返回 false
-bool SaveFile(LPCTSTR szFilePath)
+bool SaveFile(LPCTSTR szFilePath, const char * encKey /*= NULL*/)
 {
 	//设置鼠标样式为“加载”
 	pApp->MousePointerGlobalSet(IDC_Wait);
@@ -600,7 +658,7 @@ bool SaveFile(LPCTSTR szFilePath)
 
 	//以菜单栏中所选编码格式写入文档
 	if(EFPrint(hFile, formMain.Control(cFMain.txtIdShow).Text(),
-			EF_LineSeed_None, -1i64, 1, TEXT("无法向文件中写入内容"))
+			EF_LineSeed_None, -1i64, 1, TEXT("无法向文件中写入内容"), encKey)
 		< 0){
 		//若返回值小于0 则写入出错
 		//先关闭 hFile 再返回 false

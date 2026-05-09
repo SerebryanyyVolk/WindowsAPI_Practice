@@ -57,8 +57,9 @@ public:  // 属性
 	bool ShowMsgIfErrRead;	// 读取失败是否自动提示
 	bool AsUnicode;			// 是否源文件使用 Unicode 格式；除可通过属性设置外，在 OpenFile 时可自动设置此值
 	bool AsUTF8;			// 是否源文件使用 UTF8 格式；除可通过属性设置外，在 OpenFile 时可自动设置此值
+	const char * EncryptKey;		// 解密密钥（ANSI字符串），为 NULL 时不进行解密操作
 
-	// 行的结束标志:0=未设。13,10 or 2573(vbcrlf) ；
+	// 行的结束标志:0=未设。13,10 or 2573(vbcrlf) ；	
 	// -1:unknown(此时再次调用GetNextLine后看EndLineSignLast获得)；
 	// -2:未知，读到文件末尾，文件末尾无换行符
 	int iEndLineSign;		
@@ -133,7 +134,7 @@ public:  // 方法
 	bool IsEndRead();		// 获得读完状态：=true表示或者读完文件或者出错，即不能再继续读了，主程序应退出读取
 	bool IsErrOccured();	// 获得是否发生了错误状态：是否上次 GetNextLine 发生了一个错误
 
-	bool IsReadOnly();		/* 获得文件的只读属性：true 为只读
+	bool IsReadOnly();		/* 获得文件的只读属性：返回 true 为只读
 							   如果未成功打开文件，该函数默认返回 false	*/
 
 private:

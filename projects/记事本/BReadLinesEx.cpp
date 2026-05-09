@@ -24,6 +24,7 @@ CBReadLinesEx::CBReadLinesEx(LPCTSTR szFile/*=NULL*/)
 	ShowMsgIfErrRead = true;
 	AsUnicode = false;
 	AsUTF8 = false;
+	EncryptKey = NULL;
 	
 	memset(m_szFileName, 0, sizeof(m_szFileName));
 	m_hFile = INVALID_HANDLE_VALUE;
@@ -120,7 +121,8 @@ int CBReadLinesEx::GetNextLine( LPTSTR &szLine )
         if ( m_buff.iPtrInBuf < 0 ) 
 		{
             // ----从 .llStartPosAbso 开始读取一些字节存入缓冲区 .bufBytes[)
-            m_buff.iBufLen = EFGetBytes(m_hFile, m_buff.llStartPosAbso, m_buff.bufBytes, mc_RL_BufLen, 0); 
+			m_buff.iBufLen = EFGetBytes(m_hFile, m_buff.llStartPosAbso,
+				m_buff.bufBytes, mc_RL_BufLen, 0, TEXT("无法读取文件"), EncryptKey);
             if (m_buff.iBufLen < 0) goto errExit;	// 读取出错
             
             // ----初始化缓冲区指针
@@ -323,7 +325,8 @@ int CBReadLinesEx::GetNextLine( LPTSTR &szLine )
 					// 读取文件中的最后一个字节，只测试一下
 					char tByt[mc_RL_BufLen]; LONG tRet;
 
-                    tRet = EFGetBytes(m_hFile, m_buff.llStartPosAbso + m_buff.iBufLen, tByt, mc_RL_BufLen, 0);
+					tRet = EFGetBytes(m_hFile, m_buff.llStartPosAbso,
+						tByt, mc_RL_BufLen, 0, TEXT("无法读取文件"), EncryptKey);
                     if (tRet < 0)  goto errExit;   // 出错处理
 
 

@@ -794,12 +794,14 @@ bool EFBOF(HANDLE hFile);
 // 若弹出出错提示，szFailInfo 为出错信息
 // 返回读取的字节数，若失败返回 < 0；若用户“忽略”则返回 -2；
 //   若用户终止或取消或无提示框，则返回 -1
+// bitsEncKey 为解密秘钥，为 NULL 时无解密操作
 LONG EFGetBytes(HANDLE hFile, 
 				LONGLONG llReadPos, 
 				char * const pBuff, 
 				LONG iBuffMax = 131072, 
 				int iShowResume = 1,
-				LPCTSTR szFailInfo = TEXT("无法读取文件。"));
+				LPCTSTR szFailInfo = TEXT("无法读取文件。"),
+				const char * bitsEncKey = NULL);
 
 
 // 向文件句柄 hFile 中的 llWritePos 位置开始写入一批字节，
@@ -811,12 +813,14 @@ LONG EFGetBytes(HANDLE hFile,
 // 若弹出出错提示，szFailInfo 为出错信息
 // 返回写入的字节数，若失败返回 < 0；若用户“忽略”则返回 -2；
 //   若用户终止或取消或无提示框，则返回 -1
+// bitsEncKey 为加密秘钥，为 NULL 时无加密操作
 LONG EFPutBytes(HANDLE hFile, 
 				LONGLONG llWritePos, 
 				char * const pBuff, 
 				LONG iBuffLen = 131072, 
 				int iShowResume = 1,
-				LPCTSTR szFailInfo = TEXT("无法写入文件。"));
+				LPCTSTR szFailInfo = TEXT("无法写入文件。"),
+				const char * bitsEncKey = NULL);
 
 
 // 向文件 llWritePos 的位置打印一行字符
@@ -828,18 +832,21 @@ LONG EFPutBytes(HANDLE hFile,
 //   若 iShowResume=0，出错时不弹出提示框，不弹出提示框就不能在发生错误时重试
 // 返回写入的字节数，若失败返回 < 0；若用户“忽略”则返回 -2；
 //   若用户终止或取消或无提示框，则返回 -1
+// bitsEncKey 为加密秘钥，为 NULL 时无加密操作
 LONG EFPrint(HANDLE hFile, 
 			 LPCTSTR szText, 
 			 eEFLineFeed styleLineFeed = EF_LineSeed_CrLf, 
 			 LONGLONG llWritePos = -1, 
 			 int iShowResume = 1,
-			 LPCTSTR szFailInfo = TEXT("无法向文件中写入字符串。"));
+			 LPCTSTR szFailInfo = TEXT("无法向文件中写入字符串。"),
+			 const char * bitsEncKey = NULL);
 LONG EFPrint(HANDLE hFile, 
 			 tstring stringText, 
 			 eEFLineFeed styleLineFeed = EF_LineSeed_CrLf, 
 			 LONGLONG llWritePos = -1, 
 			 int iShowResume = 1,
-			 tstring stringFailInfo = TEXT("无法向文件中写入字符串。"));
+			 tstring stringFailInfo = TEXT("无法向文件中写入字符串。"),
+			 const char * bitsEncKey = NULL);
 // 从 dblStartPos 开始（包含 dblStartPos 这个位置），找到第一个是 sFoundChars 
 //   字符串中的任意一个字符的地方。
 // 例如 若 sFoundChars=="\r\n"，就是查找第一个是 \r 或 \n 的地方

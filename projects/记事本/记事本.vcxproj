@@ -81,9 +81,9 @@
     <ClInclude Include="BReadLinesEx.h" />
     <ClInclude Include="BWindows.h" />
     <ClInclude Include="BWndBase.h" />
-    <ClInclude Include="FormMain.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mdlOpenSaveDlg.h" />
+    <ClInclude Include="mdlShellExec.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -94,17 +94,23 @@
     <ClCompile Include="BReadLinesEx.cpp" />
     <ClCompile Include="BWindows.cpp" />
     <ClCompile Include="BWndBase.cpp" />
+    <ClCompile Include="FormInputEnc.cpp" />
     <ClCompile Include="FormMain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mdlOpenSaveDlg.cpp" />
+    <ClCompile Include="mdlShellExec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BOOK01A.ICO" />
+    <None Include="Key.ico" />
     <None Include="main.ico" />
     <None Include="NOTE06.ICO" />
     <None Include="NOTE07.ICO" />
     <None Include="NOTE11.ICO" />
     <None Include="NOTE12.ICO" />
+    <None Include="README.md">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="template.rc" />
